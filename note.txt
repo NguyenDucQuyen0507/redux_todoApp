@@ -1,0 +1,110 @@
+1. Cài đặt thư viện.
+npm i redux react-redux
+
+Tạo Store src/redux/store.js
+Sau đó vào store cấu hình 
+Nhưng mà ta phải tạo một reducer để tường tác src/redux/reducer.js. Ta sẽ tạo một useReducer để cấu hình type thực hiện hành động và sau đó export nó ra để store nhận giá trị truyền vào.
+const store = createStore(useReducer);
+
+Sau đó vào file index.js nơi mà chứa <App/> cấu hình Provider và store được cấu hình trước đó
+
+Sau đó ta tạo môt file định kiểu type cho hành động đó src/redux/actions.js
+const addTodo = (data) => {
+  return {
+    type: "todoList/addTodo",
+    payLoad: data,
+  };
+};
+export default addTodo;
+
+Sao đó ta vào file todoList.js để khi nhấn nút add thì sẽ đưa một việc cần làm lên
+Lúc này dispatch ta sẽ gọi từ react-redux
+import { useDispatch } from "react-redux";
+const dispatch = useDispatch();
+const hanldeAddTodo = () => {
+    dispatch(
+      addTodo({
+        id: "",
+        name: "",
+        prioriry: "",
+        complete: "",
+      })
+    );
+  };
+
+Sau đó ta tạo các useState để cập nhật giá trị
+addTodo({
+        id: uuidv4(),
+        name: inputTodo,
+        prioriry: priority,
+        complete: false,
+      })
+Khi người dùng nhấn nút add thì sẽ kích hoạt dispatch(addTodo) từ file actions.js và ta sẽ kiểm tra dữ liệu vừa nhập trong reducer.js. Vì useReducer là dữ liệu chung cho tất cả các file mình đã config trong index.js
+
+* Đến phần lấy dữ liệu ra màn hình
+vào file chứa thông tin cần in ra là TodoList
+b1 Ta sẽ import useSelector from react-redux dùng để lấy dữ liệu chung trong 
+ * const todoList = useSelector(todoListSelector);
+  trong đó todoListSelector là ta sẽ export từ một file khác 
+  export const todoListSelector = (state) => state.todoList;
+
+  Khi đó thì todoList sẽ có tất cả dữ liệu
+
+* Đến phần Search tìm kiếm có tên nào mà mình cần làm hk
+Ta cũng tạo trong action một function có kiểu type và trả dữ liệu từ payload
+Khi đã có type rồi thì ta cũng vào reducer tạo case cho kiểu type đó khi ta dispatch action thì nó sẽ cập nhật lại dữ liệu mà ta muốn thay đổi.
+Tiếp đó ta vào file chứa nút search đó cũng tạo useState lưu dữ liệu. Và sẽ dispatch một hành động có kiểu type
+
+const handleSearch = (e) => {
+  setSearchText(e.target.value);
+  dispatch(addFilterChange(e.target.value));
+};
+Khi dispatch nó sẽ trả về lại trong reducer muốn thay đổi.
+
+Sau đó ta vào file TodoList dùng useSlector từ redux để lấy dữ liệu mà mình muốn lấy
+ const selectorText = useSelector(todoSearchSelector);
+ trong đó todoSearchSelector là một function được export từ file selector.js 
+export const todoSearchSelector = (state) => state.filter; filter là object mà mình muốn lấy ra.
+
+Kế tiếp ta sẽ làm phần khi gõ vào ô tìm kiếm thì 
+export const todoListSelector = (state) => {
+  const todoSearning = state.todoList.filter((todo) => {
+    return todo.name.includes(state.filter.search);
+  });
+  return todoSearning;
+};
+// Bây h ta sẽ thực hiện việc nếu như filed name trong todoList có chứa thằng Search hay không nếu chứa thì in thằng name trùng với Search
+
+//Bây h tới phần status
+Ta cũng vào phần action tạo một function có kiểu type và payload
+Sau đó vào filterSlide để kích hoạt kiểu type đó cần làm gì
+Tiếp đó vào file index của filter để xử lsy lấy được status lúc click vào và dispatch nó
+
+//Tới phần priority thì cũng làm tương tự chỉ khác là prioriry ta chọn được nhìu phần nên ta sẽ tạo State là mảng
+
+//Bây h ta sẽ làm phần cập nhật lại khi ta check vào todo
+Ban đầu ta cũng vào action tạo một function chứa id là id mà mình sẽ check
+Sau đó vào todoListSlice nơi mà hiển thị todo ta sẽ nhận hành đó và cập nhật lại trnajg thái.
+Cuối cùng ta sẽ kích hoạt nó bằng cách khi ta check vào todo và ta sẽ kích hoạt dispatch bằng onChange và truyền id là id được nhận vào từ props.
+
+** Luồng đi sẽ là khi ta kích vào todo thì nó sẽ bắn đi id và truyền vào action có kiểu type đó và sau đó dùng type đó cập nhật lại trạng thái ở todoListSlice.
+
+Bây h ta sẽ làm phần redux toolkit
+Vào store để cấu hình lại. Trong store ta cấu hình reducer trong store nên ta sẽ không cần file reducer và action nữa.
+Sau đó vào filtersSlice để cấu hình lại gọn hơn vừa cấu hình vừa đối chiếu với action và reducer. Trong này nó có luôn kiểu dữ type khi dispatch
+Ta cũng làm tương tự với TodoSlices
+Trong 2 file này thì là tổng hợp của action và reducer.
+
+Khi làm xong ta sẽ gọi nó ra và thay thế nó cho thằng action.
+Vào file index.js của TodoList gọi thằng TodoListSlice.
+import todoListSlice from "./TodoListSlice";
+ dispatch(
+      todoListSlice.actions.addTodo({
+        id: uuidv4(),
+        name: inputTodo,
+        priority: priority,
+        completed: false,
+      })
+    );
+.actions. tới action của mình
+ Cuối cùng ta sẽ bỏ đi file action và reducer
